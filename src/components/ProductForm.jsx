@@ -33,13 +33,11 @@ const ProductForm = ({ onSubmit }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-    
         const imageUrls = await Promise.all(
             [...images].map(async (image) => {
-                const fileRef = ref(storage, `products/${image.name}`);
-                const snapshot = await uploadBytes(fileRef, image);
-                const imageUrl = await getDownloadURL(snapshot.ref);
-                return imageUrl;
+                const fileRef = ref(storage, `products/${Date.now()}_${image.name}`);
+                await uploadBytes(fileRef, image);
+                return getDownloadURL(fileRef);
             })
         );
     
@@ -52,13 +50,14 @@ const ProductForm = ({ onSubmit }) => {
         try {
             await addDoc(collection(db, "products"), productWithImages);
             toast.success('Produto cadastrado com sucesso!');
-            setProduct({ name: '', description: '', quantity: '', price: '' });  // Reset form fields
-            setImages([]);  // Reset images
+            setProduct({ name: '', description: '', quantity: '', price: '' });
+            setImages([]);
         } catch (error) {
             console.error("Erro ao cadastrar produto: ", error);
             toast.error(`Erro ao cadastrar produto: ${error.message}`);
         }
     };
+    
     
     
     return (
